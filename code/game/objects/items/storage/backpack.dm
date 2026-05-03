@@ -696,6 +696,9 @@ GLOBAL_LIST_EMPTY_TYPED(radio_packs, /obj/item/storage/backpack/marine/satchel/r
 	name = "\improper Wireless Set No.208 Small Radio Telephone Pack"
 	max_storage_space = 18
 
+/obj/item/storage/backpack/marine/satchel/rto/twe_net/freelancer
+	networks_receive = list(FACTION_MERCENARY)
+	networks_transmit = list(FACTION_MERCENARY)
 
 /obj/item/storage/backpack/marine/smock
 	name = "\improper M3 sniper's smock"

@@ -515,6 +515,12 @@
 	. = ..()
 	MD.iff_signal = FACTION_PMC
 
+/obj/item/weapon/gun/smartgun/dirty/elite_freelancer
+	flags_gun_features = GUN_SPECIALIST|GUN_WIELDED_FIRING_ONLY
+
+/obj/item/weapon/gun/smartgun/dirty/elite_freelancer/Initialize(mapload, ...)
+	. = ..()
+	MD.iff_signal = FACTION_MERCENARY
 
 //TERMINATOR SMARTGUN
 /obj/item/weapon/gun/smartgun/dirty/elite
@@ -592,6 +598,13 @@
 	set_fire_delay(FIRE_DELAY_TIER_12)
 	fa_scatter_peak = FULL_AUTO_SCATTER_PEAK_TIER_10
 	fa_max_scatter = SCATTER_AMOUNT_NONE
+
+/obj/item/weapon/gun/smartgun/l56a2/elite_freelancer
+	flags_gun_features = GUN_SPECIALIST|GUN_WIELDED_FIRING_ONLY
+
+/obj/item/weapon/gun/smartgun/l56a2/elite_freelancer/Initialize(mapload, ...)
+	. = ..()
+	MD.iff_signal = FACTION_MERCENARY
 
 // CLF SMARTGUN
 
