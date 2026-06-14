@@ -7,5 +7,3 @@
 #include "pixel_shifting\pixel_shifting.dm"
 #include "pixel_shifting\pixel_shifting_items.dm"
 #include "pixel_shifting\layer_shifting.dm"
-//
-#include "decorations.dm"
