@@ -1,4 +1,5 @@
 /obj/vehicle/multitile/arc
+	ap_rockets_to_kill = 2
 	name = "\improper M540-B Armored Recon Carrier"
 	desc = "An M540-B Armored Recon Carrier. A lightly armored reconnaissance and intelligence vehicle. Entrances on the sides."
 

@@ -82,7 +82,7 @@
 
 	last_damage_data = istype(cause_data) ? cause_data : create_cause_data(cause_data)
 
-	if(severity >= health && severity >= EXPLOSION_THRESHOLD_GIB)
+	if(severity >= health && severity >= EXPLOSION_THRESHOLD_GIB && !(istype(cause_data) && cause_data.no_gib))
 		gib(last_damage_data)
 		return
 

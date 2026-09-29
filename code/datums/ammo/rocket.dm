@@ -31,7 +31,7 @@
 	. = ..()
 
 /datum/ammo/rocket/on_hit_mob(mob/mob, obj/projectile/projectile)
-	if(iscarbon(mob)) // Doesn't matter how built-different you are, it's an explosive rocket-propelled projectile hitting you.
+	if(iscarbon(mob) && !ishuman(mob)) // Doesn't matter how built-different you are, it's an explosive rocket-propelled projectile hitting you.
 		mob.ex_act(650, null, projectile.weapon_cause_data, 100)
 	cell_explosion(get_turf(mob), 250, 40, EXPLOSION_FALLOFF_SHAPE_EXPONENTIAL, null, projectile.weapon_cause_data)
 	smoke.set_up(1, get_turf(mob))
@@ -67,17 +67,42 @@
 	penetration= ARMOR_PENETRATION_TIER_10
 	var/vehicle_slowdown_time = 2 SECONDS
 
+/// Макс. сила одного взрыва АП ракеты по человеку (после этого лимита урон не растёт). Меняй это число, чтобы регулировать смертность.
+#define AP_ROCKET_HUMAN_MAX_SEVERITY 300
+
+/// ex_act для мобов. Гиб блокируется флагом no_gib в cause_data (см. ap_cause_data), а не снижением урона.
+/datum/ammo/rocket/ap/proc/ap_mob_ex_act(mob/target, severity, obj/projectile/projectile, null_direction = FALSE)
+	target.ex_act(severity, null_direction ? null : projectile.dir, ap_cause_data(projectile), 100)
+
+/// Копия cause_data выстрела с флагом no_gib: взрыв АП ракеты не гибает мобов, даже если силы взрывов суммируются.
+/datum/ammo/rocket/ap/proc/ap_cause_data(obj/projectile/projectile)
+	var/datum/cause_data/original = projectile.weapon_cause_data
+	var/datum/cause_data/copy = new()
+	if(original)
+		copy.weak_mob = original.weak_mob
+		copy.ckey = original.ckey
+		copy.role = original.role
+		copy.faction = original.faction
+		copy.cause_name = original.cause_name
+		copy.weak_cause = original.weak_cause
+	else
+		copy.cause_name = "Anti-Armor Rocket"
+	copy.no_gib = TRUE
+	copy.human_ex_cap = AP_ROCKET_HUMAN_MAX_SEVERITY
+	copy.torso_focus = TRUE
+	return copy
+
 /datum/ammo/rocket/ap/on_hit_mob(mob/mob, obj/projectile/projectile)
 	var/turf/turf = get_turf(mob)
-	mob.ex_act(400, projectile.dir, projectile.weapon_cause_data, 100)
+	ap_mob_ex_act(mob, 400, projectile)
 	mob.apply_effect(3, WEAKEN)
 	mob.apply_effect(3, PARALYZE)
 	if(iscarbon(mob)) // Doesn't matter how built-different you are, it's an explosive rocket-propelled projectile hitting you.
-		mob.ex_act(650, null, projectile.weapon_cause_data, 100)
+		ap_mob_ex_act(mob, 650, projectile, TRUE)
 	if(mob.mob_size >= MOB_SIZE_BIG) // Bonus vs BIG things
 		var/mob/living/alivent = mob
 		alivent.apply_armoured_damage(damage*2.5, ARMOR_BOMB, BRUTE, null, penetration)
-	cell_explosion(turf, 150, 50, EXPLOSION_FALLOFF_SHAPE_LINEAR, null, projectile.weapon_cause_data)
+	cell_explosion(turf, 150, 50, EXPLOSION_FALLOFF_SHAPE_LINEAR, null, ap_cause_data(projectile))
 	smoke.set_up(1, turf)
 	smoke.start()
 
@@ -88,18 +113,19 @@
 		playsound(mob, 'sound/effects/meteorimpact.ogg', 35)
 		mob.at_munition_interior_explosion_effect(cause_data = create_cause_data("Anti-Armor Rocket"))
 		mob.interior_crash_effect()
-		mob.ex_act(400, projectile.dir, projectile.weapon_cause_data, 100)
+		mob.ex_act(400, projectile.dir, ap_cause_data(projectile), 100)
+		mob.take_ap_rocket_hit(projectile)
 	else
 		var/turf/turf = get_turf(object)
-		object.ex_act(400, projectile.dir, projectile.weapon_cause_data, 100)
-		cell_explosion(turf, 150, 50, EXPLOSION_FALLOFF_SHAPE_LINEAR, null, projectile.weapon_cause_data)
+		object.ex_act(400, projectile.dir, ap_cause_data(projectile), 100)
+		cell_explosion(turf, 150, 50, EXPLOSION_FALLOFF_SHAPE_LINEAR, null, ap_cause_data(projectile))
 		smoke.set_up(1, turf)
 		smoke.start()
 
 /datum/ammo/rocket/ap/on_hit_turf(turf/turf, obj/projectile/projectile)
 	var/hit_something = 0
 	for(var/mob/mob in turf)
-		mob.ex_act(400, projectile.dir, projectile.weapon_cause_data, 100)
+		ap_mob_ex_act(mob, 400, projectile)
 		mob.apply_effect(3, WEAKEN)
 		mob.apply_effect(3, PARALYZE)
 		hit_something = 1
@@ -107,13 +133,13 @@
 	if(!hit_something)
 		for(var/obj/object in turf)
 			if(object.density)
-				object.ex_act(400, projectile.dir, projectile.weapon_cause_data, 100)
+				object.ex_act(400, projectile.dir, ap_cause_data(projectile), 100)
 				hit_something = 1
 				continue
 	if(!hit_something)
-		turf.ex_act(150, projectile.dir, projectile.weapon_cause_data, 200)
+		turf.ex_act(150, projectile.dir, ap_cause_data(projectile), 200)
 
-	cell_explosion(turf, 150, 50, EXPLOSION_FALLOFF_SHAPE_LINEAR, null, projectile.weapon_cause_data)
+	cell_explosion(turf, 150, 50, EXPLOSION_FALLOFF_SHAPE_LINEAR, null, ap_cause_data(projectile))
 	smoke.set_up(1, turf)
 	smoke.start()
 
@@ -121,7 +147,7 @@
 	var/turf/turf = get_turf(projectile)
 	var/hit_something = 0
 	for(var/mob/mob in turf)
-		mob.ex_act(450, projectile.dir, projectile.weapon_cause_data, 100)
+		ap_mob_ex_act(mob, 450, projectile)
 		mob.apply_effect(3, WEAKEN)
 		mob.apply_effect(3, PARALYZE)
 		hit_something = 1
@@ -129,12 +155,12 @@
 	if(!hit_something)
 		for(var/obj/object in turf)
 			if(object.density)
-				object.ex_act(150, projectile.dir, projectile.weapon_cause_data, 100)
+				object.ex_act(150, projectile.dir, ap_cause_data(projectile), 100)
 				hit_something = 1
 				break
 	if(!hit_something)
-		turf.ex_act(150, projectile.dir, projectile.weapon_cause_data)
-	cell_explosion(turf, 150, 50, EXPLOSION_FALLOFF_SHAPE_LINEAR, null, projectile.weapon_cause_data)
+		turf.ex_act(150, projectile.dir, ap_cause_data(projectile))
+	cell_explosion(turf, 150, 50, EXPLOSION_FALLOFF_SHAPE_LINEAR, null, ap_cause_data(projectile))
 	smoke.set_up(1, turf)
 	smoke.start()
 
@@ -152,6 +178,7 @@
 		mob.interior_crash_effect()
 		var/turf/turf = get_turf(mob.loc)
 		mob.ex_act(150, projectile.dir, projectile.weapon_cause_data, 100)
+		mob.take_ap_rocket_hit(projectile)
 		smoke.set_up(1, turf)
 		smoke.start()
 		return

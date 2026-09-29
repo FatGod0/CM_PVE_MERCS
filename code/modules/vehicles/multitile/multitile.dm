@@ -165,6 +165,9 @@
 	// Explosive waves can propagate through the vehicle and hit it multiple times
 	var/explosive_resistance = 200
 
+	/// Сколько попаданий АП ракет нужно, чтобы вывести технику из строя (HP корпуса до 0)
+	var/ap_rockets_to_kill = 4
+
 	//Placeholders
 	icon = 'icons/obj/vehicles/vehicles.dmi'
 	icon_state = "cargo_engine"
@@ -291,6 +294,13 @@
 	if(!dmg_multipliers || !dmg_multipliers.Find(type))
 		return 1
 	return dmg_multipliers[type] * dmg_multipliers["all"]
+
+/// Прямой урон по корпусу от АП ракеты, в обход модулей и множителей: 1/ap_rockets_to_kill от максимума HP за попадание.
+/obj/vehicle/multitile/proc/take_ap_rocket_hit(atom/attacker)
+	var/hull_damage = ceil(initial(health) / max(ap_rockets_to_kill, 1))
+	health = max(0, health - hull_damage)
+	healthcheck()
+	update_icon()
 
 //Generic proc for taking damage
 //ALWAYS USE THIS WHEN INFLICTING DAMAGE TO THE VEHICLES

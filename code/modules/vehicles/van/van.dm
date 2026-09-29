@@ -3,6 +3,7 @@
 //Read the documentation in multitile.dm before trying to decipher this stuff
 
 /obj/vehicle/multitile/van
+	ap_rockets_to_kill = 1
 	name = "Colony Van"
 	desc = "A rather old hunk of metal with four wheels, you know what to do. Entrance on the back and sides."
 	layer = ABOVE_XENO_LAYER
@@ -219,6 +220,10 @@
 		var/hitchance = P.get_effective_accuracy()
 		if(prob(hitchance))
 			return TRUE
+	// Боты стреляют не в сам фургон, а в турф под ним, поэтому для них работает обычное правило техники (как у БТР и танков).
+	var/mob/shooter = P.firer
+	if(istype(shooter) && !shooter.client)
+		return ..()
 	return FALSE
 
 /obj/vehicle/multitile/van/Collide(atom/A)

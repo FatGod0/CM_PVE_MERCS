@@ -6,6 +6,12 @@
 	var/faction
 	var/cause_name
 	var/datum/weakref/weak_cause
+	/// Если TRUE, взрыв с этим cause_data не может гибать мобов (используется АП ракетой)
+	var/no_gib = FALSE
+	/// Если задано, максимальная сила взрыва по людям с этим cause_data (иначе без ограничения)
+	var/human_ex_cap = null
+	/// Если TRUE, взрыв бьёт по торсу/голове, а не по случайной конечности (человек умирает, но не остаётся с переломами всех конечностей)
+	var/torso_focus = FALSE
 
 /datum/cause_data/proc/resolve_mob()
 	if(!weak_mob)

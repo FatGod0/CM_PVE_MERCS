@@ -3,6 +3,7 @@
 //Read the documentation in multitile.dm before trying to decipher this stuff
 
 /obj/vehicle/multitile/uppvan
+	ap_rockets_to_kill = 1
 	name = "Kheshig-1M"
 	desc = "The Kheshig-1M is a result of a modernization program to try and make a common heavy utility vehicle for the Union. Lightly armored and relatively compact, most variants are unarmed."
 	layer = ABOVE_XENO_LAYER
@@ -271,6 +272,10 @@
 		var/hitchance = P.get_effective_accuracy()
 		if(prob(hitchance))
 			return TRUE
+	// Боты стреляют не в сам фургон, а в турф под ним, поэтому для них работает обычное правило техники (как у БТР и танков).
+	var/mob/shooter = P.firer
+	if(istype(shooter) && !shooter.client)
+		return ..()
 	return FALSE
 
 /obj/vehicle/multitile/uppvan/Collide(atom/A)

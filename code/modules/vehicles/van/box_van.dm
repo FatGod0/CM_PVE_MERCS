@@ -3,6 +3,7 @@
 //Read the documentation in multitile.dm before trying to decipher this stuff
 
 /obj/vehicle/multitile/box_van
+	ap_rockets_to_kill = 1
 	name = "\improper box-van"
 	desc = "A small box-type van. It's a compact vehicle with a rectangular cargo area, typically designed for transporting goods or small equipment. It features a high roof and straight sides, providing ample vertical space for storage. Its size makes it maneuverable and ideal for urban driving and tight spaces."
 	layer = ABOVE_XENO_LAYER
@@ -229,6 +230,10 @@
 		var/hitchance = P.get_effective_accuracy()
 		if(prob(hitchance))
 			return TRUE
+	// Боты стреляют не в сам фургон, а в турф под ним, поэтому для них работает обычное правило техники (как у БТР и танков).
+	var/mob/shooter = P.firer
+	if(istype(shooter) && !shooter.client)
+		return ..()
 	return FALSE
 
 /obj/vehicle/multitile/box_van/Collide(atom/A)

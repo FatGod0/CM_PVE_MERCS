@@ -141,6 +141,9 @@
 	var/b_loss = 0
 	var/f_loss = 0
 
+	if(istype(cause_data) && !isnull(cause_data.human_ex_cap))
+		severity = min(severity, cause_data.human_ex_cap)
+
 	var/damage = severity
 	var/bomb_armor = getarmor(null, ARMOR_BOMB)
 
@@ -148,7 +151,7 @@
 
 	last_damage_data = istype(cause_data) ? cause_data : create_cause_data(cause_data)
 
-	if(damage >= EXPLOSION_THRESHOLD_GIB)
+	if(damage >= EXPLOSION_THRESHOLD_GIB && !(istype(cause_data) && cause_data.no_gib))
 		var/oldloc = loc
 		gib(last_damage_data)
 		create_shrapnel(oldloc, rand(5, 9), direction, 45, /datum/ammo/bullet/shrapnel/light/human, last_damage_data)
@@ -195,6 +198,8 @@
 	//Focus half the blast on one organ
 	var/mob/attack_source = last_damage_data?.resolve_mob()
 	var/obj/limb/take_blast = pick(limbs)
+	if(istype(cause_data) && cause_data.torso_focus)
+		take_blast = get_limb("chest") || take_blast
 	update |= take_blast.take_damage(b_loss * 0.5, f_loss * 0.5, used_weapon = "Explosive blast", attack_source = attack_source)
 	pain.apply_pain(b_loss * 0.5, BRUTE)
 	pain.apply_pain(f_loss * 0.5, BURN)
